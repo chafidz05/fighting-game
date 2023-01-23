@@ -1,124 +1,332 @@
-<head>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
-    rel="stylesheet"
-  />
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: 'Press Start 2P', cursive;
+const canvas = document.querySelector('canvas')
+const c = canvas.getContext('2d')
+
+canvas.width = 1024
+canvas.height = 576
+
+c.fillRect(0, 0, canvas.width, canvas.height)
+
+const gravity = 0.7
+
+const background = new Sprite({
+  position: {
+    x: 0,
+    y: 0
+  },
+  imageSrc: './img/background.png'
+})
+
+const shop = new Sprite({
+  position: {
+    x: 600,
+    y: 128
+  },
+  imageSrc: './img/shop.png',
+  scale: 2.75,
+  framesMax: 6
+})
+
+const player = new Fighter({
+  position: {
+    x: 0,
+    y: 0
+  },
+  velocity: {
+    x: 0,
+    y: 0
+  },
+  offset: {
+    x: 0,
+    y: 0
+  },
+  imageSrc: './img/samuraiMack/Idle.png',
+  framesMax: 8,
+  scale: 2.5,
+  offset: {
+    x: 215,
+    y: 157
+  },
+  sprites: {
+    idle: {
+      imageSrc: './img/samuraiMack/Idle.png',
+      framesMax: 8
+    },
+    run: {
+      imageSrc: './img/samuraiMack/Run.png',
+      framesMax: 8
+    },
+    jump: {
+      imageSrc: './img/samuraiMack/Jump.png',
+      framesMax: 2
+    },
+    fall: {
+      imageSrc: './img/samuraiMack/Fall.png',
+      framesMax: 2
+    },
+    attack1: {
+      imageSrc: './img/samuraiMack/Attack1.png',
+      framesMax: 6
+    },
+    takeHit: {
+      imageSrc: './img/samuraiMack/Take Hit - white silhouette.png',
+      framesMax: 4
+    },
+    death: {
+      imageSrc: './img/samuraiMack/Death.png',
+      framesMax: 6
     }
-  </style>
-</head>
-<body>
-  <!-- red container div -->
-  <div style="position: relative; display: inline-block">
-    <!-- smaller red container div -->
-    <div
-      style="
-        position: absolute;
-        display: flex;
-        width: 100%;
-        align-items: center;
-        padding: 20px;
-      "
-    >
-      <!-- player health -->
-      <div
-        style="
-          position: relative;
-          width: 100%;
-          display: flex;
-          justify-content: flex-end;
-          border-top: 4px solid white;
-          border-left: 4px solid white;
-          border-bottom: 4px solid white;
-        "
-      >
-        <div style="background-color: red; height: 30px; width: 100%"></div>
-        <div
-          id="playerHealth"
-          style="
-            position: absolute;
-            background: #818cf8;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 100%;
-          "
-        ></div>
-      </div>
+  },
+  attackBox: {
+    offset: {
+      x: 100,
+      y: 50
+    },
+    width: 160,
+    height: 50
+  }
+})
 
-      <!-- timer -->
-      <div
-        id="timer"
-        style="
-          background-color: black;
-          width: 100px;
-          height: 50px;
-          flex-shrink: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          border: 4px solid white;
-        "
-      >
-        10
-      </div>
-      <!-- enemy health -->
-      <div
-        style="
-          position: relative;
-          width: 100%;
-          border-top: 4px solid white;
-          border-bottom: 4px solid white;
-          border-right: 4px solid white;
-        "
-      >
-        <div style="background-color: red; height: 30px"></div>
-        <div
-          id="enemyHealth"
-          style="
-            position: absolute;
-            background: #818cf8;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-          "
-        ></div>
-      </div>
-      <div></div>
-    </div>
-    <div
-      id="displayText"
-      style="
-        position: absolute;
-        color: white;
-        align-items: center;
-        justify-content: center;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        display: none;
-      "
-    >
-      Tie
-    </div>
-    <canvas></canvas>
-  </div>
+const enemy = new Fighter({
+  position: {
+    x: 400,
+    y: 100
+  },
+  velocity: {
+    x: 0,
+    y: 0
+  },
+  color: 'blue',
+  offset: {
+    x: -50,
+    y: 0
+  },
+  imageSrc: './img/kenji/Idle.png',
+  framesMax: 4,
+  scale: 2.5,
+  offset: {
+    x: 215,
+    y: 167
+  },
+  sprites: {
+    idle: {
+      imageSrc: './img/kenji/Idle.png',
+      framesMax: 4
+    },
+    run: {
+      imageSrc: './img/kenji/Run.png',
+      framesMax: 8
+    },
+    jump: {
+      imageSrc: './img/kenji/Jump.png',
+      framesMax: 2
+    },
+    fall: {
+      imageSrc: './img/kenji/Fall.png',
+      framesMax: 2
+    },
+    attack1: {
+      imageSrc: './img/kenji/Attack1.png',
+      framesMax: 4
+    },
+    takeHit: {
+      imageSrc: './img/kenji/Take hit.png',
+      framesMax: 3
+    },
+    death: {
+      imageSrc: './img/kenji/Death.png',
+      framesMax: 7
+    }
+  },
+  attackBox: {
+    offset: {
+      x: -170,
+      y: 50
+    },
+    width: 170,
+    height: 50
+  }
+})
 
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"
-    integrity="sha512-H6cPm97FAsgIKmlBA4s774vqoN24V5gSQL4yBTDOY2su2DeXZVhQPxFK4P6GPdnZqM9fg1G3cMv5wD7e6cFLZQ=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  ></script>
-  <script src="js/utils.js"></script>
-  <script src="js/classes.js"></script>
-  <script src="index.js"></script>
-</body>
+console.log(player)
+
+const keys = {
+  a: {
+    pressed: false
+  },
+  d: {
+    pressed: false
+  },
+  ArrowRight: {
+    pressed: false
+  },
+  ArrowLeft: {
+    pressed: false
+  }
+}
+
+decreaseTimer()
+
+function animate() {
+  window.requestAnimationFrame(animate)
+  c.fillStyle = 'black'
+  c.fillRect(0, 0, canvas.width, canvas.height)
+  background.update()
+  shop.update()
+  c.fillStyle = 'rgba(255, 255, 255, 0.15)'
+  c.fillRect(0, 0, canvas.width, canvas.height)
+  player.update()
+  enemy.update()
+
+  player.velocity.x = 0
+  enemy.velocity.x = 0
+
+  // player movement
+
+  if (keys.a.pressed && player.lastKey === 'a') {
+    player.velocity.x = -5
+    player.switchSprite('run')
+  } else if (keys.d.pressed && player.lastKey === 'd') {
+    player.velocity.x = 5
+    player.switchSprite('run')
+  } else {
+    player.switchSprite('idle')
+  }
+
+  // jumping
+  if (player.velocity.y < 0) {
+    player.switchSprite('jump')
+  } else if (player.velocity.y > 0) {
+    player.switchSprite('fall')
+  }
+
+  // Enemy movement
+  if (keys.ArrowLeft.pressed && enemy.lastKey === 'ArrowLeft') {
+    enemy.velocity.x = -5
+    enemy.switchSprite('run')
+  } else if (keys.ArrowRight.pressed && enemy.lastKey === 'ArrowRight') {
+    enemy.velocity.x = 5
+    enemy.switchSprite('run')
+  } else {
+    enemy.switchSprite('idle')
+  }
+
+  // jumping
+  if (enemy.velocity.y < 0) {
+    enemy.switchSprite('jump')
+  } else if (enemy.velocity.y > 0) {
+    enemy.switchSprite('fall')
+  }
+
+  // detect for collision & enemy gets hit
+  if (
+    rectangularCollision({
+      rectangle1: player,
+      rectangle2: enemy
+    }) &&
+    player.isAttacking &&
+    player.framesCurrent === 4
+  ) {
+    enemy.takeHit()
+    player.isAttacking = false
+
+    gsap.to('#enemyHealth', {
+      width: enemy.health + '%'
+    })
+  }
+
+  // if player misses
+  if (player.isAttacking && player.framesCurrent === 4) {
+    player.isAttacking = false
+  }
+
+  // this is where our player gets hit
+  if (
+    rectangularCollision({
+      rectangle1: enemy,
+      rectangle2: player
+    }) &&
+    enemy.isAttacking &&
+    enemy.framesCurrent === 2
+  ) {
+    player.takeHit()
+    enemy.isAttacking = false
+
+    gsap.to('#playerHealth', {
+      width: player.health + '%'
+    })
+  }
+
+  // if player misses
+  if (enemy.isAttacking && enemy.framesCurrent === 2) {
+    enemy.isAttacking = false
+  }
+
+  // end game based on health
+  if (enemy.health <= 0 || player.health <= 0) {
+    determineWinner({ player, enemy, timerId })
+  }
+}
+
+animate()
+
+window.addEventListener('keydown', (event) => {
+  if (!player.dead) {
+    switch (event.key) {
+      case 'd':
+        keys.d.pressed = true
+        player.lastKey = 'd'
+        break
+      case 'a':
+        keys.a.pressed = true
+        player.lastKey = 'a'
+        break
+      case 'w':
+        player.velocity.y = -20
+        break
+      case ' ':
+        player.attack()
+        break
+    }
+  }
+
+  if (!enemy.dead) {
+    switch (event.key) {
+      case 'ArrowRight':
+        keys.ArrowRight.pressed = true
+        enemy.lastKey = 'ArrowRight'
+        break
+      case 'ArrowLeft':
+        keys.ArrowLeft.pressed = true
+        enemy.lastKey = 'ArrowLeft'
+        break
+      case 'ArrowUp':
+        enemy.velocity.y = -20
+        break
+      case 'ArrowDown':
+        enemy.attack()
+
+        break
+    }
+  }
+})
+
+window.addEventListener('keyup', (event) => {
+  switch (event.key) {
+    case 'd':
+      keys.d.pressed = false
+      break
+    case 'a':
+      keys.a.pressed = false
+      break
+  }
+
+  // enemy keys
+  switch (event.key) {
+    case 'ArrowRight':
+      keys.ArrowRight.pressed = false
+      break
+    case 'ArrowLeft':
+      keys.ArrowLeft.pressed = false
+      break
+  }
+})
